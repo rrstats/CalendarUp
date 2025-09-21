@@ -143,10 +143,7 @@
         }
 
         .date-picker-popup {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
+            position: fixed;
             background: white;
             border: 1px solid #ddd;
             border-radius: 12px;
@@ -154,6 +151,14 @@
             z-index: 1000;
             padding: 20px;
             margin-top: 5px;
+            min-width: 300px;
+        }
+        
+        .input-group .date-picker-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
         }
 
         .date-picker-header {
@@ -731,6 +736,18 @@
             });
             
             const picker = document.getElementById(`task-${taskIndex}-datePicker`);
+            const inputElement = document.querySelector(`[onclick="openTaskDatePicker(${taskIndex})"]`);
+            
+            // Position the picker relative to the input
+            if (inputElement) {
+                const rect = inputElement.getBoundingClientRect();
+                picker.style.position = 'fixed';
+                picker.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+                picker.style.left = Math.max(10, rect.left + window.scrollX) + 'px';
+                picker.style.right = 'auto';
+                picker.style.width = '300px';
+            }
+            
             picker.style.display = 'block';
             
             // Initialize picker date if not already set
