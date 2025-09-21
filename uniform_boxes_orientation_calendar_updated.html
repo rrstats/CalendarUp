@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orientation Calendar Update</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(30, 60, 114, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .date-inputs {
+            display: flex;
+            gap: 30px;
+            align-items: end;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8faff;
+            border-radius: 12px;
+            border: 2px solid #e3f2fd;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+
+        .input-group input[type="text"] {
+            padding: 15px 20px;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-family: Arial, sans-serif;
+            background: #e6f3ff;
+            color: #2c5aa0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .time-input-container {
+            position: relative;
+        }
+
+        .time-input {
+            padding: 12px 15px;
+            border: 2px solid #b3d9ff;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            background: #e6f3ff;
+            color: #2c5aa0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .task-row .time-input {
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+
+        .time-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 2px;
+        }
+
+        .time-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #333;
+            transition: background 0.2s ease;
+        }
+
+        .time-option:hover {
+            background: #f0f7ff;
+        }
+
+        .time-option.selected {
+            background: #4285f4;
+            color: white;
+        }
+
+        .date-picker-popup {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            padding: 20px;
+            margin-top: 5px;
+        }
+
+        .date-picker-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .date-picker-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .date-picker-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .date-picker-nav button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            color: #4285f4;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+
+        .date-picker-nav button:hover {
+            background: #f0f7ff;
+        }
+
+        .date-picker-month {
+            font-size: 1em;
+            font-weight: 500;
+            color: #333;
+            min-width: 120px;
+        }
+
+        .date-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .date-picker-day-header {
+            background: #f8f9fa;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .date-picker-day {
+            background: white;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .date-picker-day:hover {
+            background: #e6f3ff;
+        }
+
+        .date-picker-day.other-month {
+            color: #ccc;
+            background: #fafafa;
+        }
+
+        .date-picker-day.selected {
+            background: #4285f4;
+            color: white;
+            font-weight: bold;
+            border-radius: 0px;
+        }
+
+        .date-picker-day.today {
+            background: #e6f3ff;
+            font-weight: 600;
+            color: #4285f4;
+        }
+
+        .input-group input:focus, .time-input:focus {
+            outline: none;
+            border-color: #4285f4;
+            background: #e6f3ff;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .tasks-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e3f2fd;
+        }
+
+        .tasks-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 4fr 1.5fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            font-weight: 600;
+        }
+
+        .task-row {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: grid;
+            grid-template-columns: 4fr 1.5fr 1fr 1fr 1fr 120px;
+            gap: 15px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .task-row:hover {
+            background: #f8faff;
+        }
+
+        .task-row:last-child {
+            border-bottom: none;
+        }
+
+        .task-row input[type="text"], .task-row select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .task-row input[type="text"]:focus, .task-row select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+        .task-description {
+            font-weight: 500;
+            color: #333;
+            min-width: 0;
+        }
+
+        .task-description input {
+            width: 100%;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        .calculated-date {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 1.1em;
+        }
+
+        .day-name {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .add-to-calendar {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: capitalize;
+        }
+
+        .add-to-calendar:hover {
+            background: #3367d6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .add-row-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 20px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .add-row-btn:hover {
+            background: #f57c00;
+            transform: translateY(-1px);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .editable-date {
+            background: #e6f3ff !important;
+            border: 2px solid #4285f4 !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .date-inputs {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .input-group {
+                min-width: 100%;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .tasks-header, .task-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .tasks-header > div, .task-row > div {
+                padding: 8px 0;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .tasks-header > div:last-child, .task-row > div:last-child {
+                border-bottom: none;
+            }
+
+            .task-row {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .date-inputs {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .task-row {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Orientation Calendar Update</h1>
+            <p>Add numerous events to your Google Calendar quickly</p>
+        </div>
+
+        <div class="date-inputs">
+            <div class="input-group">
+                <label for="prepDate">Preparatory Session Date (P)</label>
+                <div style="position: relative;">
+                    <input type="text" id="prepDate" readonly placeholder="Select date" onclick="openDatePicker('prepDate')">
+                    <div id="prepDatePicker" class="date-picker-popup" style="display: none;">
+                        <div class="date-picker-header">
+                            <div class="date-picker-title">Select the date(s) you want to assign specific hours</div>
+                            <div class="date-picker-nav">
+                                <button onclick="changeDatePickerMonth('prepDate', -1)">‹</button>
+                                <div class="date-picker-month" id="prepDateMonth"></div>
+                                <button onclick="changeDatePickerMonth('prepDate', 1)">›</button>
+                            </div>
+                        </div>
+                        <div class="date-picker-grid" id="prepDateGrid"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="orientationDate">Orientation Session Date (L)</label>
+                <div style="position: relative;">
+                    <input type="text" id="orientationDate" readonly placeholder="Select date" onclick="openDatePicker('orientationDate')">
+                    <div id="orientationDatePicker" class="date-picker-popup" style="display: none;">
+                        <div class="date-picker-header">
+                            <div class="date-picker-title">Select the date(s) you want to assign specific hours</div>
+                            <div class="date-picker-nav">
+                                <button onclick="changeDatePickerMonth('orientationDate', -1)">‹</button>
+                                <div class="date-picker-month" id="orientationDateMonth"></div>
+                                <button onclick="changeDatePickerMonth('orientationDate', 1)">›</button>
+                            </div>
+                        </div>
+                        <div class="date-picker-grid" id="orientationDateGrid"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="defaultStartTime">Default Start Time</label>
+                <div class="time-input-container">
+                    <input type="text" id="defaultStartTime" class="time-input" value="4:30pm" readonly onclick="openTimeDropdown('defaultStartTime')">
+                    <div id="defaultStartTimeDropdown" class="time-dropdown" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="defaultEndTime">Default End Time</label>
+                <div class="time-input-container">
+                    <input type="text" id="defaultEndTime" class="time-input" value="4:35pm" readonly onclick="openTimeDropdown('defaultEndTime')">
+                    <div id="defaultEndTimeDropdown" class="time-dropdown" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tasks-container">
+            <div class="tasks-header">
+                <div>Task Description</div>
+                <div>Calculated Date</div>
+                <div>Day</div>
+                <div>Start Time</div>
+                <div>End Time</div>
+                <div>Action</div>
+            </div>
+            <div id="tasksContainer">
+                <!-- Tasks will be populated here -->
+            </div>
+            <button class="add-row-btn" onclick="addCustomRow()">+ Add Custom Task</button>
+        </div>
+    </div>
+
+    <script>
+        const defaultTasks = [
+            { description: "Notification Campaign | Check Logos", dateFormula: "L - 30", type: "orientation" },
+            { description: "Notification Campaign | Check Logos", dateFormula: "L - 25", type: "orientation" },
+            { description: "Preparatory Session Details to be Sent to GuruOps", dateFormula: "L - 29", type: "orientation" },
+            { description: "Plan Preparatory Session | Release content and share with mentors", dateFormula: "P - 8", type: "prep" },
+            { description: "Pre-Engagement Communication | 1 Day, 1 Hour Before the Session", dateFormula: "P - 3", type: "prep" },
+            { description: "Learner List and Grouping", dateFormula: "L - 5", type: "orientation" },
+            { description: "Orientation Deck to be shared", dateFormula: "L - 10", type: "orientation" },
+            { description: "Track Pre-Work Video-Watch Data", dateFormula: "L - 15", type: "orientation" },
+            { description: "Track Pre-Work Video-Watch Data", dateFormula: "L - 10", type: "orientation" },
+            { description: "Track Pre-Work Video-Watch Data", dateFormula: "L - 4", type: "orientation" },
+            { description: "Check Mentor Allocation", dateFormula: "L - 15", type: "orientation" },
+            { description: "Check Mentor Allocation", dateFormula: "L - 10", type: "orientation" },
+            { description: "Share List of Learners (CNC > 3) with Lcs to Establish Connect", dateFormula: "L - 14", type: "orientation" },
+            { description: "Share List of Learners (CNC > 3) with Lcs to Establish Connect", dateFormula: "L - 9", type: "orientation" },
+            { description: "Share List of Learners (CNC > 3) with Lcs to Establish Connect", dateFormula: "L - 5", type: "orientation" },
+            { description: "Orientation Session Reminders on Olympus", dateFormula: "L - 4", type: "orientation" },
+            { description: "Share Orientation Details with Lcs (For late enrollments)", dateFormula: "L - 5", type: "orientation" },
+            { description: "Upload Orientation Recording and Slides on Olympus", dateFormula: "L + 4", type: "orientation" },
+            { description: "Inform Learners about their Groups via Email", dateFormula: "L + 4", type: "orientation" },
+            { description: "Create WhatsApp groups", dateFormula: "L + 5", type: "orientation" },
+            { description: "Add Mentors and Backups to the Group", dateFormula: "L + 6", type: "orientation" }
+        ];
+
+        let tasks = [...defaultTasks];
+        let datePickerDates = { prepDate: new Date(), orientationDate: new Date() };
+        let selectedDates = { prepDate: null, orientationDate: null };
+
+        // Generate time options for dropdown
+        function generateTimeOptions() {
+            const times = [];
+            for (let hour = 0; hour < 24; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) {
+                    const time24 = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const time12 = formatTimeTo12Hour(time24);
+                    times.push({ value: time24, display: time12 });
+                }
+            }
+            return times;
+        }
+
+        function formatTimeTo12Hour(time24) {
+            const [hours, minutes] = time24.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'pm' : 'am';
+            const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            return `${hour12}:${minutes}${ampm}`;
+        }
+
+        function formatTimeTo24Hour(time12) {
+            const match = time12.match(/(\d+):(\d+)(am|pm)/);
+            if (!match) return time12;
+            
+            let [, hours, minutes, ampm] = match;
+            hours = parseInt(hours);
+            
+            if (ampm === 'pm' && hours !== 12) {
+                hours += 12;
+            } else if (ampm === 'am' && hours === 12) {
+                hours = 0;
+            }
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes}`;
+        }
+
+        function openTimeDropdown(inputId) {
+            // Close all other dropdowns
+            document.querySelectorAll('.time-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+
+            const dropdown = document.getElementById(inputId + 'Dropdown');
+            const times = generateTimeOptions();
+            
+            dropdown.innerHTML = '';
+            times.forEach(time => {
+                const option = document.createElement('div');
+                option.className = 'time-option';
+                option.textContent = time.display;
+                option.onclick = () => selectTime(inputId, time.value, time.display);
+                dropdown.appendChild(option);
+            });
+
+            dropdown.style.display = 'block';
+
+            // Close dropdown when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeDropdown(e) {
+                    if (!e.target.closest(`#${inputId}Dropdown`) && !e.target.closest(`#${inputId}`)) {
+                        dropdown.style.display = 'none';
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            }, 100);
+        }
+
+        function selectTime(inputId, time24, time12) {
+            const input = document.getElementById(inputId);
+            input.value = time12;
+            input.setAttribute('data-time-24', time24);
+            
+            // Close dropdown
+            document.getElementById(inputId + 'Dropdown').style.display = 'none';
+            
+            // Auto-update all times when default end time changes
+            if (inputId === 'defaultEndTime') {
+                updateAllTimes();
+            }
+        }
+
+        function initializePage() {
+            // Set default times
+            document.getElementById('defaultStartTime').setAttribute('data-time-24', '16:30');
+            document.getElementById('defaultEndTime').setAttribute('data-time-24', '16:35');
+            renderTasks();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = '';
+            
+            tasks.forEach((task, index) => {
+                const row = createTaskRow(task, index);
+                container.appendChild(row);
+            });
+        }
+
+        function createTaskRow(task, index) {
+            const row = document.createElement('div');
+            row.className = 'task-row';
+            
+            const calculatedDate = calculateTaskDate(task.dateFormula);
+            const formattedDate = formatDate(calculatedDate);
+            const dayName = calculatedDate ? getDayName(calculatedDate) : '';
+            
+            const startTime = task.startTime || document.getElementById('defaultStartTime').getAttribute('data-time-24') || '16:30';
+            const endTime = task.endTime || document.getElementById('defaultEndTime').getAttribute('data-time-24') || '16:35';
+            
+            row.innerHTML = `
+                <div class="task-description">
+                    <input type="text" value="${task.description}" onchange="updateTask(${index}, 'description', this.value)">
+                </div>
+                <div class="calculated-date">
+                    ${task.custom ? 
+                        `<div style="position: relative;">
+                            <input type="text" class="editable-date" value="${task.customDate ? formatCustomDate(task.customDate) : ''}" readonly placeholder="Select date" onclick="openCustomDatePicker(${index})">
+                            <div id="custom-${index}-datePicker" class="date-picker-popup" style="display: none;">
+                                <div class="date-picker-header">
+                                    <div class="date-picker-title">Select custom task date</div>
+                                    <div class="date-picker-nav">
+                                        <button onclick="changeCustomDatePickerMonth(${index}, -1)">‹</button>
+                                        <div class="date-picker-month" id="custom-${index}-dateMonth"></div>
+                                        <button onclick="changeCustomDatePickerMonth(${index}, 1)">›</button>
+                                    </div>
+                                </div>
+                                <div class="date-picker-grid" id="custom-${index}-dateGrid"></div>
+                            </div>
+                        </div>` :
+                        (formattedDate || '<div class="skeleton"></div>')
+                    }
+                </div>
+                <div class="day-name">${task.custom && task.customDate ? getDayName(task.customDate) : dayName}</div>
+                <div class="time-input-container">
+                    <input type="text" class="time-input" value="${formatTimeTo12Hour(startTime)}" readonly onclick="openTaskTimeDropdown(${index}, 'start')">
+                    <div id="task-${index}-start-dropdown" class="time-dropdown" style="display: none;"></div>
+                </div>
+                <div class="time-input-container">
+                    <input type="text" class="time-input" value="${formatTimeTo12Hour(endTime)}" readonly onclick="openTaskTimeDropdown(${index}, 'end')">
+                    <div id="task-${index}-end-dropdown" class="time-dropdown" style="display: none;"></div>
+                </div>
+                <div>
+                    <button class="add-to-calendar" onclick="addToGoogleCalendar(${index})">Add to Cal</button>
+                </div>
+            `;
+            
+            return row;
+        }
+
+        function openTaskTimeDropdown(taskIndex, timeType) {
+            const dropdownId = `task-${taskIndex}-${timeType}-dropdown`;
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.time-dropdown').forEach(dropdown => {
+                dropdown.style.display = 'none';
+            });
+
+            const dropdown = document.getElementById(dropdownId);
+            const times = generateTimeOptions();
+            
+            dropdown.innerHTML = '';
+            times.forEach(time => {
+                const option = document.createElement('div');
+                option.className = 'time-option';
+                option.textContent = time.display;
+                option.onclick = () => selectTaskTime(taskIndex, timeType, time.value);
+                dropdown.appendChild(option);
+            });
+
+            dropdown.style.display = 'block';
+
+            // Close dropdown when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeDropdown(e) {
+                    if (!e.target.closest(`#${dropdownId}`) && !e.target.closest(`[onclick="openTaskTimeDropdown(${taskIndex}, '${timeType}')"]`)) {
+                        dropdown.style.display = 'none';
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            }, 100);
+        }
+
+        function selectTaskTime(taskIndex, timeType, time24) {
+            const field = timeType === 'start' ? 'startTime' : 'endTime';
+            updateTask(taskIndex, field, time24);
+            document.getElementById(`task-${taskIndex}-${timeType}-dropdown`).style.display = 'none';
+            renderTasks(); // Re-render to update display
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return null;
+            
+            const date = new Date(dateString);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            return `${months[date.getMonth()]} ${date.getDate()}`;
+        }
+
+        function calculateTaskDate(formula) {
+            if (!formula || typeof formula !== 'string') return null;
+            
+            const prepDate = selectedDates.prepDate;
+            const orientationDate = selectedDates.orientationDate;
+            
+            if (!prepDate && !orientationDate) return null;
+            
+            try {
+                const { baseDate, operation, days } = parseFormula(formula, prepDate, orientationDate);
+                if (!baseDate || isNaN(days)) return null;
+                
+                const resultDate = new Date(baseDate);
+                if (operation === 'subtract') {
+                    resultDate.setDate(resultDate.getDate() - days);
+                } else {
+                    resultDate.setDate(resultDate.getDate() + days);
+                }
+                
+                return resultDate.toISOString().split('T')[0];
+            } catch (error) {
+                console.warn('Error calculating date for formula:', formula, error);
+                return null;
+            }
+        }
+
+        function parseFormula(formula, prepDate, orientationDate) {
+            let baseDate, operation, days;
+            
+            if (formula.includes('P')) {
+                if (!prepDate) return {};
+                baseDate = new Date(prepDate);
+                const parts = formula.split('P ')[1] || formula.split('P')[1];
+                if (!parts) return {};
+                
+                operation = parts.includes('-') ? 'subtract' : 'add';
+                days = parseInt(parts.replace(/[+-\s]/g, ''));
+                
+            } else if (formula.includes('L')) {
+                if (!orientationDate) return {};
+                baseDate = new Date(orientationDate);
+                const parts = formula.split('L ')[1] || formula.split('L')[1];
+                if (!parts) return {};
+                
+                operation = parts.includes('-') ? 'subtract' : 'add';
+                days = parseInt(parts.replace(/[+-\s]/g, ''));
+            }
+            
+            return { baseDate, operation, days };
+        }
+
+        function getDayName(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return days[date.getDay()];
+        }
+
+        function calculateDates() {
+            renderTasks();
+        }
+
+        function updateTask(index, field, value) {
+            if (!tasks[index]) return;
+            tasks[index][field] = value;
+            if (field === 'customDate') {
+                renderTasks();
+            }
+        }
+
+        function updateAllTimes() {
+            const defaultStart = document.getElementById('defaultStartTime').getAttribute('data-time-24') || '16:30';
+            const defaultEnd = document.getElementById('defaultEndTime').getAttribute('data-time-24') || '16:35';
+            
+            tasks.forEach(task => {
+                if (!task.startTime) {
+                    task.startTime = defaultStart;
+                }
+                if (!task.endTime) {
+                    task.endTime = defaultEnd;
+                }
+            });
+            
+            renderTasks();
+        }
+
+        function addCustomRow() {
+            const customTask = {
+                description: "Custom Task",
+                custom: true,
+                customDate: "",
+                startTime: document.getElementById('defaultStartTime').getAttribute('data-time-24') || '16:30',
+                endTime: document.getElementById('defaultEndTime').getAttribute('data-time-24') || '16:35'
+            };
+            
+            tasks.push(customTask);
+            renderTasks();
+        }
+
+        function addToGoogleCalendar(index) {
+            if (!tasks[index]) {
+                alert('Task not found!');
+                return;
+            }
+            
+            const task = tasks[index];
+            const eventDate = getTaskEventDate(task);
+            
+            if (!eventDate) {
+                alert('Please set the required dates first!');
+                return;
+            }
+            
+            const { startDateTime, endDateTime } = getEventTimeStamps(eventDate, task);
+            const googleUrl = buildGoogleCalendarUrl(task, startDateTime, endDateTime);
+            
+            window.open(googleUrl, '_blank');
+        }
+
+        function getTaskEventDate(task) {
+            if (task.custom) {
+                return task.customDate;
+            } else {
+                return calculateTaskDate(task.dateFormula);
+            }
+        }
+
+        function getEventTimeStamps(eventDate, task) {
+            const startTime = task.startTime || '16:30';
+            const endTime = task.endTime || '16:35';
+            
+            return {
+                startDateTime: `${eventDate}T${startTime}:00`,
+                endDateTime: `${eventDate}T${endTime}:00`
+            };
+        }
+
+        function buildGoogleCalendarUrl(task, startDateTime, endDateTime) {
+            return `https://calendar.google.com/calendar/render?action=TEMPLATE` +
+                `&text=${encodeURIComponent(task.description || 'Orientation Task')}` +
+                `&dates=${startDateTime.replace(/[-:]/g, '')}/${endDateTime.replace(/[-:]/g, '')}` +
+                `&details=${encodeURIComponent('Orientation Calendar Task - ' + (task.description || 'Untitled Task'))}` +
+                `&remind=10m`;
+        }
+
+        function openDatePicker(inputId) {
+            document.querySelectorAll('.date-picker-popup').forEach(picker => {
+                picker.style.display = 'none';
+            });
+            
+            const picker = document.getElementById(inputId + 'Picker');
+            picker.style.display = 'block';
+            renderDatePicker(inputId);
+            
+            setTimeout(() => {
+                document.addEventListener('click', function closePicker(e) {
+                    if (!e.target.closest(`#${inputId}Picker`) && !e.target.closest(`#${inputId}`)) {
+                        picker.style.display = 'none';
+                        document.removeEventListener('click', closePicker);
+                    }
+                });
+            }, 100);
+        }
+
+        function renderDatePicker(inputId) {
+            const currentPickerDate = datePickerDates[inputId];
+            const monthElement = document.getElementById(inputId + 'Month');
+            const gridElement = document.getElementById(inputId + 'Grid');
+            
+            monthElement.textContent = currentPickerDate.toLocaleDateString('en-US', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            gridElement.innerHTML = '';
+            
+            const dayHeaders = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            dayHeaders.forEach(day => {
+                const cell = document.createElement('div');
+                cell.className = 'date-picker-day-header';
+                cell.textContent = day;
+                gridElement.appendChild(cell);
+            });
+            
+            const year = currentPickerDate.getFullYear();
+            const month = currentPickerDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const today = new Date();
+            
+            for (let i = 0; i < 42; i++) {
+                const cellDate = new Date(startDate);
+                cellDate.setDate(startDate.getDate() + i);
+                
+                const cell = document.createElement('div');
+                cell.className = 'date-picker-day';
+                cell.textContent = cellDate.getDate();
+                
+                const dateString = cellDate.toISOString().split('T')[0];
+                
+                if (selectedDates[inputId] === dateString) {
+                    cell.classList.add('selected');
+                }
+                
+                if (cellDate.toDateString() === today.toDateString()) {
+                    cell.classList.add('today');
+                }
+                
+                if (cellDate.getMonth() !== month) {
+                    cell.classList.add('other-month');
+                }
+                
+                cell.onclick = () => selectDate(inputId, dateString, cellDate);
+                
+                gridElement.appendChild(cell);
+            }
+        }
+
+        function changeDatePickerMonth(inputId, direction) {
+            datePickerDates[inputId].setMonth(datePickerDates[inputId].getMonth() + direction);
+            renderDatePicker(inputId);
+        }
+
+        function selectDate(inputId, dateString, dateObj) {
+            selectedDates[inputId] = dateString;
+            
+            const input = document.getElementById(inputId);
+            input.value = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById(inputId + 'Picker').style.display = 'none';
+            calculateDates();
+        }
+
+        initializePage();
+    </script>
+</body>
+</html>
